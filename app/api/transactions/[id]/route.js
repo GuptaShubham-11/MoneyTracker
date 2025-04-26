@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
 import Transaction from '@/lib/models/transaction';
 import { connectDB } from '@/lib/db';
 
