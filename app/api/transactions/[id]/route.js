@@ -8,7 +8,12 @@ export async function PUT(req, { params }) {
     try {
         await connectDB();
 
-        const { id } = params;
+        const id = params.id;
+
+        if (!id) {
+            return NextResponse.json({ message: 'Transaction ID is required' }, { status: 400 });
+        }
+
         const body = await req.json();
         const { amount, description, date, category } = body;
 
@@ -35,7 +40,7 @@ export async function PUT(req, { params }) {
 }
 
 // DELETE: Delete a transaction by ID
-export async function DELETE(req, { params }) {
+export async function DELETE(_req, { params }) {
     try {
         await connectDB();
 
