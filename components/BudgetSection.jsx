@@ -66,7 +66,7 @@ export default function BudgetSection() {
                         <p className="text-second text-sm">Plan ahead by setting your budget for each category.</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex sm:flex-row flex-col items-center gap-4">
                         <Select value={newCategory} onValueChange={setNewCategory}>
                             <SelectTrigger className="bg-crd text-txt h-12 py-2 rounded">
                                 <SelectValue placeholder="Select Category" />

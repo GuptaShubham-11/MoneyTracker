@@ -37,7 +37,7 @@ export default function ChartsSection() {
                                     <XAxis dataKey="month" stroke="#aaa" tickLine={false} axisLine={false} />
                                     <YAxis stroke="#aaa" tickLine={false} axisLine={false} />
                                     <Tooltip cursor={{ fill: "rgba(136, 132, 216, 0.1)" }} />
-                                    <Bar dataKey="total" fill="#8884d8" radius={[8, 8, 0, 0]} />
+                                    <Bar dataKey="total" fill="#8884d8" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (
