@@ -2,63 +2,66 @@ import { NextResponse } from 'next/server';
 import Budget from '@/lib/models/budget';
 import { connectDB } from '@/lib/db';
 
-// PUT: Update a budget
-export async function PUT(req, { params }) {
+// Helper: Validate budget creation fields
+function validateBudgetFields({ category, amount, month, ownerId }) {
+    return category && amount && month && ownerId;
+}
+
+// GET: Get all budgets for a month
+export async function GET(req) {
     try {
         await connectDB();
 
-        const id = params.id;
+        const { searchParams } = new URL(req.url);
+        const ownerId = searchParams.get('ownerId');
+        const month = searchParams.get('month'); // Example: '2025-04'
 
-        if (!id) {
-            return NextResponse.json({ message: 'Budget ID is required' }, { status: 400 });
+        if (!ownerId) {
+            return NextResponse.json({ message: 'Owner ID is required' }, { status: 400 });
         }
 
-        const body = await req.json();
-        const { category, amount, month } = body;
+        let budgets = [];
 
-        if (!category || !amount || !month) {
-            return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+        if (month) {
+            budgets = await Budget.find({
+                ownerId,
+                monthYear: month,
+            });
+        } else {
+            budgets = await Budget.find({ ownerId });
         }
 
-        const updatedBudget = await Budget.findByIdAndUpdate(
-            id,
-            { category, amount, month },
-            { new: true }
-        );
-
-        if (!updatedBudget) {
-            return NextResponse.json({ message: 'Budget not found' }, { status: 404 });
-        }
-
-        return NextResponse.json({ budget: updatedBudget }, { status: 200 });
+        return NextResponse.json({ budgets }, { status: 200 });
 
     } catch (error) {
-        console.error('PUT budget error:', error);
-        return NextResponse.json({ message: 'Failed to update budget' }, { status: 500 });
+        console.error('GET budgets error:', error);
+        return NextResponse.json({ message: 'Failed to fetch budgets' }, { status: 500 });
     }
 }
 
-// DELETE: Delete a budget
-export async function DELETE(_req, { params }) {
+// POST: Set a new category budget
+export async function POST(req) {
     try {
         await connectDB();
 
-        const id = params.id;
+        const body = await req.json();
+        const { category, amount, month, ownerId } = body;
 
-        if (!id) {
-            return NextResponse.json({ message: 'Budget ID is required' }, { status: 400 });
+        if (!validateBudgetFields({ category, amount, month, ownerId })) {
+            return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
         }
 
-        const deletedBudget = await Budget.findByIdAndDelete(id);
+        const newBudget = await Budget.create({
+            category,
+            amount,
+            monthYear: month,
+            ownerId,
+        });
 
-        if (!deletedBudget) {
-            return NextResponse.json({ message: 'Budget not found' }, { status: 404 });
-        }
-
-        return NextResponse.json({ message: 'Budget deleted successfully' }, { status: 200 });
+        return NextResponse.json({ budget: newBudget }, { status: 201 });
 
     } catch (error) {
-        console.error('DELETE budget error:', error);
-        return NextResponse.json({ message: 'Failed to delete budget' }, { status: 500 });
+        console.error('POST budget error:', error);
+        return NextResponse.json({ message: 'Failed to create budget' }, { status: 500 });
     }
 }

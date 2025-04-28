@@ -2,25 +2,36 @@ import { NextResponse } from 'next/server';
 import Transaction from '@/lib/models/transaction';
 import { connectDB } from '@/lib/db';
 
-// GET: Fetch all transactions (optionally filter by month/year)
+// Helper: Validate required fields
+function validateTransactionFields({ amount, date, category, ownerId }) {
+    return amount && date && category && ownerId;
+}
+
+// GET: Fetch all transactions (optionally filtered by month/year)
 export async function GET(req) {
     try {
         await connectDB();
 
         const { searchParams } = new URL(req.url);
-        const month = searchParams.get('month'); // format: "2025-04"
+        const ownerId = searchParams.get('ownerId');
+        const month = searchParams.get('month'); // optional, format: "2025-04"
 
-        let query = {};
+        if (!ownerId) {
+            return NextResponse.json({ message: 'Missing ownerId' }, { status: 400 });
+        }
+
+        const query = { ownerId };
 
         if (month) {
             const [year, monthNum] = month.split('-').map(Number);
-            const start = new Date(year, monthNum - 1, 1);
-            const end = new Date(year, monthNum, 1);
+            const startOfMonth = new Date(year, monthNum - 1, 1);
+            const endOfMonth = new Date(year, monthNum, 1);
 
-            query.date = { $gte: start, $lt: end };
+            query.date = { $gte: startOfMonth, $lt: endOfMonth };
         }
 
         const transactions = await Transaction.find(query).sort({ date: -1 });
+
         return NextResponse.json({ transactions }, { status: 200 });
 
     } catch (error) {
@@ -29,15 +40,15 @@ export async function GET(req) {
     }
 }
 
-// POST: Add a new transaction
+// POST: Create a new transaction
 export async function POST(req) {
     try {
         await connectDB();
 
         const body = await req.json();
-        const { amount, description, date, category } = body;
+        const { amount, description, date, category, ownerId } = body;
 
-        if (!amount || !date || !category) {
+        if (!validateTransactionFields({ amount, date, category, ownerId })) {
             return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
         }
 
@@ -46,6 +57,7 @@ export async function POST(req) {
             description,
             date,
             category,
+            ownerId,
         });
 
         return NextResponse.json({ transaction: newTransaction }, { status: 201 });

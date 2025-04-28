@@ -3,6 +3,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-bg: #0D0D0D;
+  --color-txt: #E0E0E0;
+  --color-main: #4F46E5;
+  --color-second: #71717A;
+  --color-crd: #1A1A1A;
+  --color-bdr: #262626;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-txt);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -116,7 +130,27 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #555;
+  /* dark gray */
+  border-radius: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
