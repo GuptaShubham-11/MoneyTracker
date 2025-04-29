@@ -135,6 +135,9 @@ export function TransactionModal({ open, onClose, onSave, initialData }) {
                             <option value="Travel">Travel</option>
                             <option value="Rent">Rent</option>
                             <option value="Entertainment">Entertainment</option>
+                            <option value="Health">Health</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Education">Education</option>
                             <option value="Other">Other</option>
                         </select>
                         {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
