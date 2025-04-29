@@ -82,7 +82,8 @@ export function BudgetProvider({ children }) {
     const fetchSummary = async (month = new Date().toISOString().slice(0, 7)) => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/summary?month=${month}`);
+            const ownerId = getOwnerId();
+            const res = await axios.get(`/api/summary?month=${month}&ownerId=${ownerId}`);
             const data = res.data;
 
             setSummary({

@@ -7,31 +7,39 @@ import { connectDB } from '@/lib/db';
 function getMonthRange(month) {
     const start = new Date(`${month}-01T00:00:00.000Z`);
     const end = new Date(start);
-    end.setMonth(end.getMonth() + 1); // Next month
+    end.setMonth(end.getMonth() + 1);
     return { start, end };
 }
 
-// GET: Summary of transactions + budgets
+// GET: Summary of transactions + budgets for a user
 export async function GET(req) {
     try {
         await connectDB();
 
         const { searchParams } = new URL(req.url);
-        const month = searchParams.get('month'); // Format: '2025-04'
+        const month = searchParams.get('month'); // Example: '2025-04'
+        const ownerId = searchParams.get('ownerId');
 
+        if (!ownerId) {
+            return NextResponse.json({ message: 'Owner ID is required' }, { status: 400 });
+        }
         if (!month) {
             return NextResponse.json({ message: 'Month is required' }, { status: 400 });
         }
 
         const { start, end } = getMonthRange(month);
 
-        // Fetch transactions within the month
+        // Fetch transactions of the user within the month
         const transactions = await Transaction.find({
+            ownerId,
             date: { $gte: start, $lt: end },
         }).sort({ date: -1 });
 
-        // Fetch budgets for the month
-        const budgets = await Budget.find({ monthYear: month });
+        // Fetch budgets of the user for the month
+        const budgets = await Budget.find({
+            ownerId,
+            monthYear: month,
+        });
 
         // Calculate total expenses
         const totalExpenses = transactions.reduce((sum, tx) => sum + tx.amount, 0);
@@ -59,15 +67,11 @@ export async function GET(req) {
             total: totalExpenses,
         }];
 
-        // Pick recent 5 transactions
-        const recentTransactions = transactions.slice(0, 5);
-
         return NextResponse.json({
             totalExpenses,
             categoryExpenses,
             budgets,
             budgetComparison,
-            recentTransactions,
             monthlyExpenses,
         }, { status: 200 });
 
